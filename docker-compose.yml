@@ -1,0 +1,21 @@
+networks:
+  learning-net:
+    external: true
+
+volumes:
+  learning-vol:
+
+services:
+  learning-postgres:
+    image: postgres:18
+    container_name: elearning-postgres-sb13
+    ports:
+    - "1500:5432"
+    environment:
+      POSTGRES_USER: sb13usr
+      POSTGRES_PASSWORD: qwerty
+      POSTGRES_DB: learning_db
+    volumes:
+      - learning-vol:/var/lib/postgresql/18/docker
+    networks:
+      - learning-net
