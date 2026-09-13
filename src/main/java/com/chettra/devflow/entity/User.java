@@ -27,7 +27,8 @@ public class User {
     private String firstname;
     private String lastname;
     private String profileImage;
-    private Boolean active;
+    @Builder.Default
+    private Boolean active = true;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
