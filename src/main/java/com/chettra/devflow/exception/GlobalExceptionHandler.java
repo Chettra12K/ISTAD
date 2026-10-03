@@ -51,5 +51,6 @@ public class GlobalExceptionHandler {
         response.put("message", "Something went wrong, please try again later.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+	
 
 }

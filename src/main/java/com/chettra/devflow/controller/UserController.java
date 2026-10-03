@@ -34,8 +34,14 @@ public class UserController {
 
 	@GetMapping
 	public ResponseEntity<Page<UserResponse>> getAll(
-			@RequestParam(defaultValue = "0") @Min(0) int page,
-			@RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+			@RequestParam(defaultValue = "0")
+			@Min(value = 0,message = "Page must be greater than or equal to 0")
+			int page,
+			@RequestParam(defaultValue = "10")
+			@Min(value = 1, message = "Size must be greater than 0")
+			@Max(value = 100,message = "size must not be exceed 100")
+			int size
+	) {
 		return ResponseEntity.ok(userService.getAll(page,size));
 	}
 
@@ -55,8 +61,14 @@ public class UserController {
 	@GetMapping("/search")
 	public ResponseEntity<Page<UserResponse>> searchByUsername(
 			@RequestParam String name,
-			@RequestParam(defaultValue = "0") @Min(0) int page,
-			@RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+			@RequestParam(defaultValue = "0")
+			@Min(value = 0,message = "Page must be greater than or equal to 0")
+			int page,
+			@RequestParam(defaultValue = "10")
+			@Min(value = 1,message = "size must be greater than 0")
+			@Max(value = 100,message = "size must be not exceed 100")
+			int size
+	) {
 		return ResponseEntity.ok(userService.searchByUsername(name, page, size));
 	}
 }
