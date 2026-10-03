@@ -1,4 +1,4 @@
-package com.chettra.devflow.exception;
+package com.chettra.devflow.common.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
 	

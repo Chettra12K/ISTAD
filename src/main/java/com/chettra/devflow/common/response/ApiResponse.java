@@ -1,4 +1,4 @@
-package com.chettra.devflow.common;
+package com.chettra.devflow.common.response;
 
 import java.time.LocalDateTime;
 

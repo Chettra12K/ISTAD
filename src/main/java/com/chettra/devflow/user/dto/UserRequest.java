@@ -1,4 +1,4 @@
-package com.chettra.devflow.dto;
+package com.chettra.devflow.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

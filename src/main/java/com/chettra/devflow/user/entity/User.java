@@ -1,4 +1,4 @@
-package com.chettra.devflow.entity;
+package com.chettra.devflow.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

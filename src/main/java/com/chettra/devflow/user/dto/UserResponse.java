@@ -1,4 +1,4 @@
-package com.chettra.devflow.dto;
+package com.chettra.devflow.user.dto;
 
 import lombok.Builder;
 import lombok.Getter;

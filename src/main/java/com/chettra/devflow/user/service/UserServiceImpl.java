@@ -1,11 +1,11 @@
-package com.chettra.devflow.service;
+package com.chettra.devflow.user.service;
 
-import com.chettra.devflow.dto.UserRequest;
-import com.chettra.devflow.dto.UserResponse;
-import com.chettra.devflow.entity.User;
-import com.chettra.devflow.exception.ResourceNotFoundException;
-import com.chettra.devflow.mapper.UserMapper;
-import com.chettra.devflow.repository.UserRepository;
+import com.chettra.devflow.user.dto.UserRequest;
+import com.chettra.devflow.user.dto.UserResponse;
+import com.chettra.devflow.user.entity.User;
+import com.chettra.devflow.common.exception.ResourceNotFoundException;
+import com.chettra.devflow.user.mapper.UserMapper;
+import com.chettra.devflow.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;

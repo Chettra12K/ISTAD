@@ -1,9 +1,9 @@
-package com.chettra.devflow.controller;
+package com.chettra.devflow.user.controller;
 
 import com.chettra.devflow.config.ApiConstrants;
-import com.chettra.devflow.dto.UserRequest;
-import com.chettra.devflow.dto.UserResponse;
-import com.chettra.devflow.service.UserService;
+import com.chettra.devflow.user.dto.UserRequest;
+import com.chettra.devflow.user.dto.UserResponse;
+import com.chettra.devflow.user.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
