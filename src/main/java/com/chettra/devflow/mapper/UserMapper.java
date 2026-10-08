@@ -1,8 +1,8 @@
-package com.chettra.devflow.user.mapper;
+package com.chettra.devflow.mapper;
 
-import com.chettra.devflow.user.dto.UserRequest;
-import com.chettra.devflow.user.dto.UserResponse;
-import com.chettra.devflow.user.entity.User;
+import com.chettra.devflow.dto.user.UserRequest;
+import com.chettra.devflow.dto.user.UserResponse;
+import com.chettra.devflow.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

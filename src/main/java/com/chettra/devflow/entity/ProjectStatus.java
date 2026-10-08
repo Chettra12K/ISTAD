@@ -1,4 +1,4 @@
-package com.chettra.devflow.user.entity;
+package com.chettra.devflow.entity;
 
 public enum ProjectStatus {
     PLANNING,

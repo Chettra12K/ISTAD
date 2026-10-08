@@ -1,6 +1,6 @@
-package com.chettra.devflow.user.repository;
+package com.chettra.devflow.repository;
 
-import com.chettra.devflow.user.entity.User;
+import com.chettra.devflow.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,7 @@
-package com.chettra.devflow.user.service;
+package com.chettra.devflow.service;
 
-import com.chettra.devflow.user.dto.UserRequest;
-import com.chettra.devflow.user.dto.UserResponse;
+import com.chettra.devflow.dto.user.UserRequest;
+import com.chettra.devflow.dto.user.UserResponse;
 import org.springframework.data.domain.Page;
 
 public interface UserService {
