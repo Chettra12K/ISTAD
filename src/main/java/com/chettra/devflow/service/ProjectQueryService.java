@@ -21,7 +21,10 @@ public class ProjectQueryService {
     public Page<Project> search(ProjectPageRequest request){
         Sort.Direction direction = Sort.Direction.valueOf(request.directionOrDefault().toUpperCase());
         PageRequest pageable = PageRequest.of(request.pageOrDefault(),request.sizeOrDefault(), Sort.by(direction, request.sortByOrDefault()));
-        Specification<Project> specification = Specification.where(ProjectSpecification.hasStatus(request.status())).and(ProjectSpecification.hasOwnerId(request.ownerId()));
+        Specification<Project> specification = Specification
+                .where(ProjectSpecification.isActive())
+                .and(ProjectSpecification.hasStatus(request.status()))
+                .and(ProjectSpecification.hasOwnerId(request.ownerId()));
         return projectRepository.findAll(specification, pageable);
     }
 }

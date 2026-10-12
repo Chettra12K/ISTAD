@@ -23,4 +23,8 @@ public final class ProjectSpecification {
             return cb.equal(root.get("owner").get("id"),ownerId);
         };
     }
+    public static Specification<Project> isActive() {
+        return (root, query, cb) ->
+                cb.isTrue(root.get("active"));
+    }
 }

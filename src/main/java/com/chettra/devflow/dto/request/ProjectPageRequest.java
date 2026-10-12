@@ -18,6 +18,12 @@ public record ProjectPageRequest(
                 message = "sortBy must be name, createdAt, or status"
         )
         String sortBy,
+
+        @Pattern(
+                regexp = "ASC|DESC",
+                flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "direction must be ASC or DESC"
+        )
         String direction,
         String status,
 
