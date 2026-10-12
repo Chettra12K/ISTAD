@@ -5,6 +5,7 @@ import com.chettra.devflow.common.validation.ProjectSortField;
 import com.chettra.devflow.config.ApiConstrants;
 import com.chettra.devflow.dto.project.ProjectRequest;
 import com.chettra.devflow.dto.project.ProjectResponse;
+import com.chettra.devflow.dto.request.ProjectPageRequest;
 import com.chettra.devflow.service.ProjectService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -64,13 +65,9 @@ public class ProjectController {
 	}
 	
 	@GetMapping("/search")
-	public ResponseEntity<Page<ProjectResponse>> search(@RequestParam String keyword,
-														@RequestParam(defaultValue = "0") @Min(0) int page,
-														@RequestParam(defaultValue = "10") @Min(1) int size) {
+	public ResponseEntity<Page<ProjectResponse>> search(@Valid @ModelAttribute ProjectPageRequest request) {
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-		
-		return ResponseEntity.ok(projectService.search(keyword, pageable));
+		return ResponseEntity.ok(projectService.search(request));
 	}
 	
 	@GetMapping("/owner/{ownerId}")

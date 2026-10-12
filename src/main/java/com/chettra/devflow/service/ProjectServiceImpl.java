@@ -4,6 +4,7 @@ import com.chettra.devflow.common.exception.BadRequestException;
 import com.chettra.devflow.common.exception.ResourceNotFoundException;
 import com.chettra.devflow.dto.project.ProjectRequest;
 import com.chettra.devflow.dto.project.ProjectResponse;
+import com.chettra.devflow.dto.request.ProjectPageRequest;
 import com.chettra.devflow.entity.Project;
 import com.chettra.devflow.entity.ProjectStatus;
 import com.chettra.devflow.entity.User;
@@ -24,6 +25,7 @@ public class ProjectServiceImpl implements ProjectService {
 		private final ProjectRepository projectRepository;
 		private final UserRepository userRepository;
 		private final ProjectMapper projectMapper;
+		private final ProjectQueryService projectQueryService;
 		
 		@Override
 		public ProjectResponse create(ProjectRequest request) {
@@ -51,14 +53,13 @@ public class ProjectServiceImpl implements ProjectService {
 		public Page<ProjectResponse> getAll(Pageable pageable) {
 			return projectRepository.findByActiveTrue(pageable).map(projectMapper::toResponse);
 		}
-		
+
 		@Override
 		@Transactional(readOnly = true)
-		public Page<ProjectResponse> search(
-				String keyword,
-				Pageable pageable
-		) {
-			return projectRepository.findByNameContainingIgnoreCaseAndActiveTrue(keyword, pageable).map(projectMapper::toResponse);
+		public Page<ProjectResponse> search(ProjectPageRequest request) {
+
+			Page<Project> projects = projectQueryService.search(request);
+			return projects.map(projectMapper::toResponse);
 		}
 		
 		@Override
