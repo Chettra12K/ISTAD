@@ -20,20 +20,10 @@ public class GlobalExceptionHandler {
 	 * Handles @Valid request body validation errors.
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(
-			MethodArgumentNotValidException exception,
-			HttpServletRequest request) {
+	public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletRequest request) {
 		
 		Map<String, String> validationErrors = new LinkedHashMap<>();
-		
-		exception.getBindingResult()
-				.getFieldErrors()
-				.forEach(error ->
-						validationErrors.put(
-								error.getField(),
-								error.getDefaultMessage()
-						)
-				);
+		exception.getBindingResult().getFieldErrors().forEach(error -> validationErrors.put(error.getField(), error.getDefaultMessage()));
 		
 		ApiErrorResponse response = ApiErrorResponse.builder()
 				.success(false)
@@ -82,6 +72,30 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(response);
+	}
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request) {
+		ApiErrorResponse response = ApiErrorResponse.builder()
+				.success(false)
+				.status(HttpStatus.NOT_FOUND.value())
+				.error(HttpStatus.NOT_FOUND.getReasonPhrase())
+				.message(exception.getMessage())
+				.path(request.getRequestURI())
+				.timestamp(Instant.now())
+				.build();
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+	@ExceptionHandler(BadRequestException.class)
+	public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException exception, HttpServletRequest request) {
+		ApiErrorResponse response = ApiErrorResponse.builder()
+				.success(false)
+				.status(HttpStatus.BAD_REQUEST.value())
+				.message(exception.getMessage())
+				.path(request.getRequestURI())
+				.timestamp(Instant.now())
+				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+				.build();
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 	
 	/**

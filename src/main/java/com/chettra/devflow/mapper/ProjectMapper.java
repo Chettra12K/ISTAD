@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper (componentModel = "spring")
 public interface ProjectMapper {
-	@Mapping( target = "ownerId", source = "owner.id")
-	@Mapping(target = "OwnerUserName", source = "owner.username")
+	@Mapping(target = "ownerId", source = "owner.id")
+	@Mapping(target = "ownerUsername", source = "owner.username")
 	ProjectResponse toResponse(Project project);
 }

@@ -1,5 +1,6 @@
 package com.chettra.devflow.dto.project;
 
+import com.chettra.devflow.entity.ProjectStatus;
 import lombok.*;
 
 @Getter
@@ -12,8 +13,9 @@ public class ProjectResponse {
 	private String name;
 	private String description;
 	private Boolean active;
+	private ProjectStatus status;
 	private Long ownerId;
-	private String OwnerUserName;
+	private String ownerUsername;
 	private String createdAt;
 	private String updatedAt;
 }
