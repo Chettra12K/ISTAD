@@ -14,7 +14,7 @@ public record ProjectPageRequest(
         Integer size,
 
         @Pattern(
-                regexp = "name | createdAt|status",
+                regexp = "name|createdAt|status",
                 message = "sortBy must be name, createdAt, or status"
         )
         String sortBy,
