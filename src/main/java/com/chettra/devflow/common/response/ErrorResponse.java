@@ -11,7 +11,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
-public class ApiErrorResponse {
+public class ErrorResponse {
 	private boolean success;
 	private String message;
 	private int status;

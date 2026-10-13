@@ -1,6 +1,6 @@
 package com.chettra.devflow.common.exception;
 
-import com.chettra.devflow.common.response.ApiErrorResponse;
+import com.chettra.devflow.common.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -20,12 +20,12 @@ public class GlobalExceptionHandler {
 	 * Handles @Valid request body validation errors.
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletRequest request) {
 		
 		Map<String, String> validationErrors = new LinkedHashMap<>();
 		exception.getBindingResult().getFieldErrors().forEach(error -> validationErrors.put(error.getField(), error.getDefaultMessage()));
 		
-		ApiErrorResponse response = ApiErrorResponse.builder()
+		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.BAD_REQUEST.value())
 				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
 	 * for example @Min, @Max, @Positive, etc.
 	 */
 	@ExceptionHandler(ConstraintViolationException.class)
-	public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+	public ResponseEntity<ErrorResponse> handleConstraintViolation(
 			ConstraintViolationException exception,
 			HttpServletRequest request) {
 		
@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
 						)
 				);
 		
-		ApiErrorResponse response = ApiErrorResponse.builder()
+		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.BAD_REQUEST.value())
 				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
@@ -74,8 +74,8 @@ public class GlobalExceptionHandler {
 				.body(response);
 	}
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<ApiErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request) {
-		ApiErrorResponse response = ApiErrorResponse.builder()
+	public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request) {
+		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.NOT_FOUND.value())
 				.error(HttpStatus.NOT_FOUND.getReasonPhrase())
@@ -86,8 +86,8 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
 	@ExceptionHandler(BadRequestException.class)
-	public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException exception, HttpServletRequest request) {
-		ApiErrorResponse response = ApiErrorResponse.builder()
+	public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException exception, HttpServletRequest request) {
+		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.BAD_REQUEST.value())
 				.message(exception.getMessage())
@@ -97,16 +97,30 @@ public class GlobalExceptionHandler {
 				.build();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ErrorResponse> handleConflict(
+			ConflictException exception, HttpServletRequest request
+	) {
+		ErrorResponse response = ErrorResponse.builder()
+				.success(false)
+				.message(exception.getMessage())
+				.status(HttpStatus.CONFLICT.value())
+				.timestamp(Instant.now())
+				.path((request.getRequestURI()))
+				.error(HttpStatus.CONFLICT.getReasonPhrase())
+				.build();
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+	}
 	
 	/**
 	 * Handles unexpected exceptions.
 	 */
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ApiErrorResponse> handleException(
+	public ResponseEntity<ErrorResponse> handleException(
 			Exception exception,
 			HttpServletRequest request) {
 		
-		ApiErrorResponse response = ApiErrorResponse.builder()
+		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
 				.error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())

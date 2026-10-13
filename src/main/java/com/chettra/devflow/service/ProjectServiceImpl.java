@@ -2,6 +2,7 @@ package com.chettra.devflow.service;
 
 import com.chettra.devflow.common.exception.BadRequestException;
 import com.chettra.devflow.common.exception.ResourceNotFoundException;
+import com.chettra.devflow.common.util.ProjectNameNormalizer;
 import com.chettra.devflow.dto.project.ProjectRequest;
 import com.chettra.devflow.dto.project.ProjectResponse;
 import com.chettra.devflow.dto.request.ProjectPageRequest;
@@ -28,16 +29,24 @@ public class ProjectServiceImpl implements ProjectService {
 		private final ProjectQueryService projectQueryService;
 		
 		@Override
+		@Transactional
 		public ProjectResponse create(ProjectRequest request) {
-
+			
 			if (request.getStatus() == ProjectStatus.ARCHIVED) {
 				throw new  BadRequestException("Project cannot be created with ARCHIVED status");
 			}
+			String projectName = ProjectNameNormalizer.normalize(request.getName());
 			User owner = userRepository.findById(request.getOwnerId()).orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + request.getOwnerId()));
-			if (projectRepository.existsByNameIgnoreCaseAndOwnerId(request.getName(), request.getOwnerId())) {
-				throw new IllegalArgumentException("Project already exists for this owner");
+			if (projectRepository.existsByNameIgnoreCaseAndOwnerId(projectName, request.getOwnerId())) {
+				throw new BadRequestException("Project already exists for this owner" + projectName);
 			}
-			Project project = Project.builder().name(request.getName().trim()).description(request.getDescription()).owner(owner).status(request.getStatus()).active(true).build();
+			Project project = Project.builder()
+					.name(projectName)
+					.description(request.getDescription())
+					.owner(owner)
+					.status(request.getStatus())
+					.active(true)
+					.build();
 			return projectMapper.toResponse(projectRepository.save(project));
 		}
 		
@@ -63,7 +72,7 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		
 		@Override
-		@Transactional(readOnly = true)
+		@Transactional
 		public Page<ProjectResponse> getByOwner(Long ownerId, Pageable pageable) {
 			if (!userRepository.existsById(ownerId)) {
 				throw new ResourceNotFoundException(
@@ -75,12 +84,23 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		@Override
 		public ProjectResponse update(Long id, ProjectRequest request) {
+			
 			if (request.getStatus() == ProjectStatus.ARCHIVED) {
 				throw new  BadRequestException("Project cannot be updated with ARCHIVED status. Use DELETE to archive the project");
 			}
 			Project project = projectRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
 			User owner = userRepository.findById(request.getOwnerId()).orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + request.getOwnerId()));
-			project.setName(request.getName().trim());
+			String projectName = ProjectNameNormalizer.normalize(request.getName());
+			if (!project.getName().equalsIgnoreCase(projectName)
+					&& projectRepository.existsByNameIgnoreCaseAndOwnerId(
+					projectName,
+					request.getOwnerId()
+			)) {
+				throw new BadRequestException(
+						"Project already exists for this owner: " + projectName
+				);
+			}
+			project.setName(projectName);
 			project.setDescription(request.getDescription());
 			project.setOwner(owner);
 			project.setStatus(request.getStatus());
@@ -88,6 +108,7 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		
 		@Override
+		@Transactional
 		public void archive(Long id) {
 
 			Project project = projectRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
