@@ -1,5 +1,6 @@
 package com.chettra.devflow.service;
 
+import com.chettra.devflow.common.exception.BadRequestException;
 import com.chettra.devflow.common.exception.ConflictException;
 import com.chettra.devflow.common.exception.ResourceNotFoundException;
 import com.chettra.devflow.dto.project.ProjectRequest;
@@ -312,5 +313,99 @@ class ProjectServiceImplTest {
 		
 		verify(projectRepository)
 				.saveAndFlush(any(Project.class));
+	}
+	
+	@Test
+	void create_shouldThrowWhenStatusIsArchived() {
+		
+		ProjectRequest archivedRequest = new ProjectRequest(
+				"Archived Project",
+				"This project should not be created",
+				1L,
+				ProjectStatus.ARCHIVED
+		);
+		
+		assertThrows(
+				BadRequestException.class,
+				() -> projectService.create(archivedRequest)
+		);
+		
+		verifyNoInteractions(
+				projectRepository,
+				userRepository,
+				projectMapper,
+				projectQueryService
+		);
+	}
+	
+	@Test
+	void update_shouldThrowWhenStatusIsArchived() {
+		
+		ProjectRequest archivedRequest = new ProjectRequest(
+				"DevFlow API",
+				"Updated description",
+				1L,
+				ProjectStatus.ARCHIVED
+		);
+		
+		assertThrows(
+				BadRequestException.class,
+				() -> projectService.update(1L, archivedRequest)
+		);
+		
+		verifyNoInteractions(
+				projectRepository,
+				userRepository,
+				projectMapper
+		);
+	}
+	
+	@Test
+	void update_shouldNormalizeProjectNameBeforeSaving() {
+		
+		ProjectRequest updateRequest = new ProjectRequest(
+				"   DevFlow    Updated   ",
+				"Updated description",
+				1L,
+				ProjectStatus.PLANNING
+		);
+		
+		ProjectResponse response = ProjectResponse.builder()
+				.id(1L)
+				.name("DevFlow Updated")
+				.build();
+		
+		when(projectRepository.findByIdAndActiveTrue(1L))
+				.thenReturn(Optional.of(project));
+		
+		when(userRepository.findById(1L))
+				.thenReturn(Optional.of(owner));
+		
+		when(projectRepository
+				.existsByNameIgnoreCaseAndOwnerIdAndActiveTrue(
+						"DevFlow Updated",
+						1L
+				))
+				.thenReturn(false);
+		
+		when(projectRepository.saveAndFlush(any(Project.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+		
+		when(projectMapper.toResponse(any(Project.class)))
+				.thenReturn(response);
+		
+		ProjectResponse result =
+				projectService.update(1L, updateRequest);
+		
+		assertEquals(
+				"DevFlow Updated",
+				result.getName()
+		);
+		
+		verify(projectRepository).saveAndFlush(
+				argThat(savedProject ->
+						"DevFlow Updated".equals(savedProject.getName())
+				)
+		);
 	}
 }
