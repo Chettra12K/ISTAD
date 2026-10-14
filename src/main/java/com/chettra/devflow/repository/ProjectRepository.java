@@ -14,6 +14,5 @@ public interface ProjectRepository extends JpaRepository <Project, Long>, JpaSpe
 	Page<Project> findByOwnerIdAndActiveTrue(Long ownerId, Pageable pageable);
 	Page<Project> findByNameContainingIgnoreCaseAndActiveTrue(String name, Pageable pageable);
 	Optional<Project> findByIdAndActiveTrue(Long id);
-	boolean existsByNameIgnoreCaseAndOwnerId(String name, Long ownerId);
 	boolean existsByNameIgnoreCaseAndOwnerIdAndActiveTrue(String name, Long ownerId);
 }
