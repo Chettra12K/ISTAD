@@ -276,41 +276,59 @@ class ProjectServiceImplTest {
 		verify(projectRepository, never())
 				.save(any(Project.class));
 	}
-	
+
 	@Test
 	void create_shouldThrowConflictWhenDatabaseUniqueConstraintIsViolated() {
-		
-		ConstraintViolationException constraintViolation =
+
+		ProjectRequest request = new ProjectRequest(
+				"DevFlow API",
+				"Project description",
+				1L,
+				ProjectStatus.PLANNING
+		);
+
+		User owner = User.builder()
+				.id(1L)
+				.username("owner")
+				.email("owner@test.com")
+				.build();
+
+		when(userRepository.findById(1L))
+				.thenReturn(Optional.of(owner));
+
+		// The application performs this check BEFORE saveAndFlush().
+		when(projectRepository.existsByNameIgnoreCaseAndOwnerIdAndActiveTrue(
+				eq("DevFlow API"),
+				eq(1L)
+		)).thenReturn(false);
+
+		ConstraintViolationException constraintViolationException =
 				new ConstraintViolationException(
-						"duplicate project",
+						"duplicate project name",
 						null,
 						"uk_project_owner_lower_name"
 				);
-		
+
 		DataIntegrityViolationException databaseException =
 				new DataIntegrityViolationException(
-						"Duplicate project name",
-						constraintViolation
+						"could not execute statement",
+						constraintViolationException
 				);
-		
-		when(userRepository.findById(1L))
-				.thenReturn(Optional.of(owner));
-		
-		when(projectRepository
-				.existsByNameIgnoreCaseAndOwnerIdAndActiveTrue(
-						"DevFlow API",
-						1L
-				))
-				.thenReturn(false);
-		
+
 		when(projectRepository.saveAndFlush(any(Project.class)))
 				.thenThrow(databaseException);
-		
+
 		assertThrows(
 				ConflictException.class,
 				() -> projectService.create(request)
 		);
-		
+
+		verify(projectRepository)
+				.existsByNameIgnoreCaseAndOwnerIdAndActiveTrue(
+						eq("DevFlow API"),
+						eq(1L)
+				);
+
 		verify(projectRepository)
 				.saveAndFlush(any(Project.class));
 	}
