@@ -30,8 +30,8 @@ dependencies {
 //    implementation 'org.springframework.boot:spring-boot-starter-security'
 //    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
 
-    // Database migration
-    implementation 'org.flywaydb:flyway-core'
+    // Database migration — Spring Boot 4
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 
     //Validation
