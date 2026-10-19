@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -41,12 +42,12 @@ class ProjectRepositoryIntegrationTest {
 				POSTGRES::getDriverClassName
 		);
 
-		// Flyway creates the schema; Hibernate validates it.
-		registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
-		registry.add("spring.flyway.enabled", () -> true);
-		registry.add("spring.flyway.baseline-on-migrate", () -> false);
+		// Hibernate creates and removes the test schema automatically.
+		registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
 	}
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
 	private ProjectRepository projectRepository;
@@ -58,6 +59,11 @@ class ProjectRepositoryIntegrationTest {
 
 	@BeforeEach
 	void setUp() {
+		jdbcTemplate.execute("""
+    CREATE UNIQUE INDEX IF NOT EXISTS uk_project_owner_lower_name
+    ON projects (owner_id, LOWER(name))
+    WHERE active = true
+    """);
 		projectRepository.deleteAll();
 		userRepository.deleteAll();
 
