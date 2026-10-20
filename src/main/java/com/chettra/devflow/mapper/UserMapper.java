@@ -15,12 +15,16 @@ public interface UserMapper {
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-
+    
+    // Add this annotation to your existing mapToEntity method:
+    @Mapping(target = "roles", ignore = true)
     User mapToEntity(UserRequest request);
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-
+    
+    // Add this annotation to your existing updateEntity method:
+    @Mapping(target = "roles", ignore = true)
     void updateEntity(UserRequest request, @MappingTarget User user);
 }

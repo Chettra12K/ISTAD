@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -41,4 +43,19 @@ public class User {
     protected void setUpdatedAt() {
         updatedAt = LocalDateTime.now();
     }
+	
+	@Builder.Default
+	@jakarta.persistence.ManyToMany(fetch = jakarta.persistence.FetchType.LAZY)
+	@jakarta.persistence.JoinTable(
+			name = "user_roles",
+			joinColumns = @jakarta.persistence.JoinColumn(name = "user_id"),
+			inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "role_id"),
+			uniqueConstraints = @jakarta.persistence.UniqueConstraint(
+					name = "uk_user_roles_user_role",
+					columnNames = {"user_id", "role_id"}
+			)
+	)
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
+	private Set<Role> roles = new HashSet<>();
 }
