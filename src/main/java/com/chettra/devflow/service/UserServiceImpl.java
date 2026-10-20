@@ -2,9 +2,11 @@ package com.chettra.devflow.service;
 
 import com.chettra.devflow.dto.user.UserRequest;
 import com.chettra.devflow.dto.user.UserResponse;
+import com.chettra.devflow.entity.Role;
 import com.chettra.devflow.entity.User;
 import com.chettra.devflow.common.exception.ResourceNotFoundException;
 import com.chettra.devflow.mapper.UserMapper;
+import com.chettra.devflow.repository.RoleRepository;
 import com.chettra.devflow.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -12,7 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -21,9 +26,9 @@ public class UserServiceImpl implements UserService {
 	
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
-//	private UserResponse mapToResponse(User user) {
-//		return UserResponse.builder().id(user.getId()).username(user.getUsername()).email(user.getEmail()).build();
-//	}
+	private final RoleRepository roleRepository;
+
+
 	@Override
 	public UserResponse create (UserRequest request) {
 
@@ -63,6 +68,52 @@ public class UserServiceImpl implements UserService {
 	public Page<UserResponse> searchByUsername(String username,int page, int size){
 		Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 		return userRepository.findByUsernameContainingIgnoreCase(username,pageable).map(userMapper::mapToResponse);
+	}
+	@Override
+	@Transactional
+	public void assignRole(Long userId, Long roleId) {
+
+		User user = userRepository.findByIdWithRoles(userId)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"User not found with id: " + userId
+				));
+
+		Role role = roleRepository.findById(String.valueOf(roleId))
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"Role not found with id: " + roleId
+				));
+
+		if (!user.getRoles().add(role)) {
+			throw new ResponseStatusException(
+					HttpStatus.CONFLICT,
+					"User already has role: " + role.getName()
+			);
+		}
+	}
+	@Override
+	@Transactional
+	public void removeRole(Long userId, Long roleId) {
+
+		User user = userRepository.findByIdWithRoles(userId)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"User not found with id: " + userId
+				));
+
+		Role role = roleRepository.findById(String.valueOf(roleId))
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"Role not found with id: " + roleId
+				));
+
+		if (!user.getRoles().remove(role)) {
+			throw new ResponseStatusException(
+					HttpStatus.NOT_FOUND,
+					"User does not have role: " + role.getName()
+			);
+		}
 	}
 
 }

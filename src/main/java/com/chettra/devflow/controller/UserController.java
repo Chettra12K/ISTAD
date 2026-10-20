@@ -71,4 +71,16 @@ public class UserController {
 	) {
 		return ResponseEntity.ok(userService.searchByUsername(name, page, size));
 	}
+
+	@PutMapping("/{userId}/roles/{roleId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void assignRole(@PathVariable Long userId, @PathVariable Long roleId) {
+		userService.assignRole(userId, roleId);
+	}
+
+	@DeleteMapping("/{userId}/roles/{roleId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void removeRole(@PathVariable Long userId, @PathVariable Long roleId) {
+		userService.removeRole(userId, roleId);
+	}
 }

@@ -11,4 +11,6 @@ public interface UserService {
 	UserResponse Update(Long id, UserRequest request);
 	void delete(Long id);
 	Page<UserResponse> searchByUsername(String username, int page, int size);
+	void assignRole(Long userId, Long roleId);
+	void removeRole(Long userId, Long roleId);
 }
