@@ -1,0 +1,83 @@
+PHASE 1
+Foundation
+   ✓ Spring Boot
+   ✓ Gradle
+   ✓ PostgreSQL
+   ✓ Docker
+   ✓ REST architecture
+   ✓ Exception handling
+   ✓ Validation
+   ✓ Pagination
+
+PHASE 2
+Security
+   ✓ Keycloak
+   ✓ JWT
+   ✓ User
+   ✓ Role
+   ✓ Authorities
+   ✓ Endpoint authorization
+
+PHASE 3  ← WE ARE HERE
+Architecture hardening
+   → repository cleanup
+   → Flyway
+   → schema validation
+   → auditing foundation
+   → authorization architecture
+
+PHASE 4
+Team
+   → Team
+   → Team members
+   → team authorization
+
+PHASE 5
+Project Member
+   → membership
+   → project roles
+   → membership authorization
+
+PHASE 6
+Sprint
+   → sprint lifecycle
+   → sprint planning
+   → sprint validation
+
+PHASE 7
+Task
+   → assignment
+   → priority
+   → status
+   → sprint
+   → task transitions
+   → authorization
+
+PHASE 8
+Comment
+   → task comments
+   → editing/deletion authorization
+   → audit
+
+PHASE 9
+Activity Log
+   → automatic auditing
+   → security events
+   → business events
+
+PHASE 10
+Testing
+   → unit
+   → integration
+   → Testcontainers
+   → security tests
+   → API tests
+
+PHASE 11
+Production
+   → Docker application
+   → PostgreSQL
+   → Keycloak
+   → environment configuration
+   → CI/CD
+   → cloud deployment

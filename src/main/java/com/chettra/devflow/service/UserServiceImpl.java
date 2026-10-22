@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
 						"User not found with id: " + userId
 				));
 
-		Role role = roleRepository.findById(String.valueOf(roleId))
+		Role role = roleRepository.findById(roleId)
 				.orElseThrow(() -> new ResponseStatusException(
 						HttpStatus.NOT_FOUND,
 						"Role not found with id: " + roleId
@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
 						"User not found with id: " + userId
 				));
 
-		Role role = roleRepository.findById(String.valueOf(roleId))
+		Role role = roleRepository.findById(roleId)
 				.orElseThrow(() -> new ResponseStatusException(
 						HttpStatus.NOT_FOUND,
 						"Role not found with id: " + roleId

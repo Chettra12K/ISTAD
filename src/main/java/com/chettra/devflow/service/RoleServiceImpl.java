@@ -95,7 +95,7 @@ public class RoleServiceImpl implements RoleService {
 	}
 	
 	private Role findRole(Long id) {
-		return roleRepository.findById(String.valueOf(id))
+		return roleRepository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(
 						HttpStatus.NOT_FOUND,
 						"Role not found with id: " + id
