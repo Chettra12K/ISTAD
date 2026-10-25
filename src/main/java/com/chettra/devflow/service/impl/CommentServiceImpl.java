@@ -9,12 +9,15 @@ import com.chettra.devflow.entity.User;
 import com.chettra.devflow.repository.CommentRepository;
 import com.chettra.devflow.repository.TaskRepository;
 import com.chettra.devflow.repository.UserRepository;
+import com.chettra.devflow.service.ActivityLogService;
 import com.chettra.devflow.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
     @Override
     public CommentResponse create(Long projectId, Long taskId, String username, CommentRequest request) {
@@ -37,7 +41,10 @@ public class CommentServiceImpl implements CommentService {
                 .content(normalize(request.getContent()))
                 .build();
 
-        return toResponse(commentRepository.save(comment));
+        Comment saved = commentRepository.save(comment);
+        activityLogService.record(projectId, user.getId(), "COMMENT", saved.getId(), "CREATED",
+                Map.of("taskId", taskId));
+        return toResponse(saved);
     }
 
     @Override
@@ -53,7 +60,10 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findByIdAndTaskId(commentId, taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
         comment.setContent(normalize(request.getContent()));
-        return toResponse(commentRepository.save(comment));
+        Comment saved = commentRepository.save(comment);
+        activityLogService.record(projectId, saved.getUser().getId(), "COMMENT", saved.getId(), "UPDATED",
+                Map.of("taskId", taskId));
+        return toResponse(saved);
     }
 
     @Override
@@ -61,7 +71,10 @@ public class CommentServiceImpl implements CommentService {
         getTask(projectId, taskId);
         Comment comment = commentRepository.findByIdAndTaskId(commentId, taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
+        Long userId = comment.getUser().getId();
         commentRepository.delete(comment);
+        activityLogService.record(projectId, userId, "COMMENT", commentId, "DELETED",
+                Map.of("taskId", taskId));
     }
 
     private Task getTask(Long projectId, Long taskId) {
