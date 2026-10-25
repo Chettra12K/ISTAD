@@ -10,12 +10,15 @@ import com.chettra.devflow.repository.ProjectMemberRepository;
 import com.chettra.devflow.repository.ProjectRepository;
 import com.chettra.devflow.repository.SprintRepository;
 import com.chettra.devflow.repository.TaskRepository;
+import com.chettra.devflow.service.ActivityLogService;
 import com.chettra.devflow.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class TaskServiceImpl implements TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final SprintRepository sprintRepository;
+    private final ActivityLogService activityLogService;
 
     @Override
     public TaskResponse create(Long projectId, TaskRequest request) {
@@ -43,7 +47,10 @@ public class TaskServiceImpl implements TaskService {
 
         applyRelations(task, projectId, request);
         validateDueDate(task);
-        return toResponse(taskRepository.save(task));
+        Task saved = taskRepository.save(task);
+        activityLogService.record(projectId, null, "TASK", saved.getId(), "CREATED",
+                Map.of("taskNumber", saved.getTaskNumber(), "title", saved.getTitle()));
+        return toResponse(saved);
     }
 
     @Override
@@ -76,28 +83,20 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse update(Long projectId, Long taskId, TaskRequest request) {
         Task task = getTask(projectId, taskId);
 
-        if (request.getTitle() != null) {
-            task.setTitle(normalizeTitle(request.getTitle()));
-        }
-        if (request.getDescription() != null) {
-            task.setDescription(request.getDescription());
-        }
-        if (request.getStatus() != null) {
-            task.setStatus(request.getStatus());
-        }
-        if (request.getPriority() != null) {
-            task.setPriority(request.getPriority());
-        }
-        if (request.getDueDate() != null) {
-            task.setDueDate(request.getDueDate());
-        }
-        if (request.getEstimatedHours() != null) {
-            task.setEstimatedHours(request.getEstimatedHours());
-        }
+        if (request.getTitle() != null) task.setTitle(normalizeTitle(request.getTitle()));
+        if (request.getDescription() != null) task.setDescription(request.getDescription());
+        if (request.getStatus() != null) task.setStatus(request.getStatus());
+        if (request.getPriority() != null) task.setPriority(request.getPriority());
+        if (request.getDueDate() != null) task.setDueDate(request.getDueDate());
+        if (request.getEstimatedHours() != null) task.setEstimatedHours(request.getEstimatedHours());
 
         applyRelations(task, projectId, request);
         validateDueDate(task);
-        return toResponse(taskRepository.save(task));
+        Task saved = taskRepository.save(task);
+        activityLogService.record(projectId, null, "TASK", saved.getId(), "UPDATED",
+                Map.of("taskNumber", saved.getTaskNumber(), "status", saved.getStatus().name(),
+                        "priority", saved.getPriority().name()));
+        return toResponse(saved);
     }
 
     private void applyRelations(Task task, Long projectId, TaskRequest request) {
