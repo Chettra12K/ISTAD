@@ -10,12 +10,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-//    Optional<User> findByEmail(String email);
-//    Optional<User> findByUsername(String username);
-//    boolean existsByUsername(String username);
-//    boolean existsByEmail(String email);
+    Optional<User> findByUsernameIgnoreCase(String username);
+
     Page<User> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
-	boolean existsByRoles_Id(Long roleId);
+
+    boolean existsByRoles_Id(Long roleId);
+
     @Query("""
     select distinct u
     from User u
