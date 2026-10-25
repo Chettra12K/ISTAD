@@ -8,8 +8,8 @@ import com.chettra.devflow.dto.projectmember.ProjectMemberResponse;
 import com.chettra.devflow.dto.projectmember.ProjectMemberRoleRequest;
 import com.chettra.devflow.entity.Project;
 import com.chettra.devflow.entity.ProjectMember;
-import com.chettra.devflow.entity.User;
 import com.chettra.devflow.entity.Team;
+import com.chettra.devflow.entity.User;
 import com.chettra.devflow.repository.ProjectMemberRepository;
 import com.chettra.devflow.repository.ProjectRepository;
 import com.chettra.devflow.repository.TeamRepository;
@@ -88,6 +88,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public void remove(Long projectId, Long memberId) {
         ProjectMember member = getActiveMember(projectId, memberId);
         member.setActive(false);
+        member.getTeams().forEach(team -> team.getMembers().remove(member));
         member.getTeams().clear();
         projectMemberRepository.save(member);
     }
