@@ -22,8 +22,6 @@ CREATE TABLE tasks (
 
     CONSTRAINT fk_task_project FOREIGN KEY (project_id)
         REFERENCES projects(id) ON DELETE CASCADE,
-    CONSTRAINT fk_task_sprint FOREIGN KEY (sprint_id)
-        REFERENCES sprints(id) ON DELETE SET NULL,
     CONSTRAINT fk_task_assignee FOREIGN KEY (assignee_id)
         REFERENCES project_members(id) ON DELETE SET NULL,
     CONSTRAINT uk_task_project_number UNIQUE (project_id, task_number),
@@ -37,3 +35,6 @@ CREATE INDEX idx_task_project_priority ON tasks(project_id, priority);
 CREATE INDEX idx_task_project_sprint ON tasks(project_id, sprint_id);
 CREATE INDEX idx_task_assignee ON tasks(assignee_id);
 CREATE INDEX idx_task_due_date ON tasks(project_id, due_date);
+
+-- sprint_id intentionally has no FK in V3 because the sprint table is introduced later.
+-- The FK is added by the sprint migration after the sprint table exists.
