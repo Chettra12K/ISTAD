@@ -27,48 +27,35 @@ public class TeamServiceImpl implements TeamService {
     public TeamResponse create(Long projectId, TeamRequest request) {
         Project project = getProject(projectId);
         String name = normalize(request.getName());
-
         if (teamRepository.existsByProjectIdAndNameIgnoreCaseAndActiveTrue(projectId, name)) {
             throw new ConflictException("An active team with this name already exists in the project: " + name);
         }
-
-        Team team = Team.builder()
-                .name(name)
-                .description(request.getDescription())
-                .project(project)
-                .active(true)
-                .build();
-
+        Team team = Team.builder().name(name).description(request.getDescription()).project(project).active(true).build();
         return toResponse(teamRepository.save(team));
     }
 
     @Override
     public TeamResponse getById(Long projectId, Long teamId) {
-        return toResponse(teamRepository.findByIdAndProjectId(teamId, projectId)
-                .filter(Team::getActive)
+        return toResponse(teamRepository.findByIdAndProjectId(teamId, projectId).filter(Team::getActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId)));
     }
 
     @Override
     public Page<TeamResponse> getAll(Long projectId, Pageable pageable) {
         getProject(projectId);
-        return teamRepository.findAll(pageable)
-                .map(this::toResponse);
+        return teamRepository.findByProjectIdAndActiveTrue(projectId, pageable).map(this::toResponse);
     }
 
     @Override
     @Transactional
     public TeamResponse update(Long projectId, Long teamId, TeamRequest request) {
-        Team team = teamRepository.findByIdAndProjectId(teamId, projectId)
-                .filter(Team::getActive)
+        Team team = teamRepository.findByIdAndProjectId(teamId, projectId).filter(Team::getActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
-
         String name = normalize(request.getName());
         if (!team.getName().equalsIgnoreCase(name)
                 && teamRepository.existsByProjectIdAndNameIgnoreCaseAndActiveTrue(projectId, name)) {
             throw new ConflictException("An active team with this name already exists in the project: " + name);
         }
-
         team.setName(name);
         team.setDescription(request.getDescription());
         return toResponse(teamRepository.save(team));
@@ -77,8 +64,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public void delete(Long projectId, Long teamId) {
-        Team team = teamRepository.findByIdAndProjectId(teamId, projectId)
-                .filter(Team::getActive)
+        Team team = teamRepository.findByIdAndProjectId(teamId, projectId).filter(Team::getActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
         team.setActive(false);
     }
@@ -93,16 +79,8 @@ public class TeamServiceImpl implements TeamService {
     }
 
     private TeamResponse toResponse(Team team) {
-        return TeamResponse.builder()
-                .id(team.getId())
-                .name(team.getName())
-                .description(team.getDescription())
-                .active(team.getActive())
-                .projectId(team.getProject().getId())
-                .projectName(team.getProject().getName())
-                .memberCount(team.getMembers().size())
-                .createdAt(team.getCreatedAt())
-                .updatedAt(team.getUpdatedAt())
-                .build();
+        return TeamResponse.builder().id(team.getId()).name(team.getName()).description(team.getDescription())
+                .active(team.getActive()).projectId(team.getProject().getId()).projectName(team.getProject().getName())
+                .memberCount(team.getMembers().size()).createdAt(team.getCreatedAt()).updatedAt(team.getUpdatedAt()).build();
     }
 }
