@@ -12,6 +12,9 @@ import com.chettra.devflow.service.ActivityLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +33,7 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     public void record(Long projectId, Long userId, String entityType, Long entityId,
                        String action, Map<String, Object> details) {
         Project project = projectRepository.findById(projectId).orElse(null);
-        User user = userId == null ? null : userRepository.findById(userId).orElse(null);
+        User user = resolveUser(userId);
 
         ActivityLog log = ActivityLog.builder()
                 .project(project)
@@ -61,5 +64,20 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 .details(log.getDetails())
                 .createdAt(log.getCreatedAt())
                 .build());
+    }
+
+    private User resolveUser(Long userId) {
+        if (userId != null) {
+            return userRepository.findById(userId).orElse(null);
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken jwtAuthenticationToken) {
+            String username = jwtAuthenticationToken.getToken().getClaimAsString("preferred_username");
+            if (username != null) {
+                return userRepository.findByUsernameIgnoreCase(username).orElse(null);
+            }
+        }
+        return null;
     }
 }
