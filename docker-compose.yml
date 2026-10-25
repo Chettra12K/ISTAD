@@ -29,9 +29,15 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
 
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: devflow
+      KC_DB_PASSWORD: devflow123
+
     ports:
       - "8081:8080"
-
+    depends_on:
+      - postgres
 
 volumes:
 
