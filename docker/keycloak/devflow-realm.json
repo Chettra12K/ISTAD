@@ -1,0 +1,50 @@
+﻿{
+  "realm": "devflow",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Full administrative access"
+      },
+      {
+        "name": "PROJECT_MANAGER",
+        "description": "Project and team management access"
+      },
+      {
+        "name": "USER",
+        "description": "Standard DevFlow user access"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "devflow-api",
+      "name": "DevFlow REST API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "frontchannelLogout": true
+    }
+  ]
+}
