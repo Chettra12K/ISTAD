@@ -23,4 +23,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     where u.id = :id
 """)
     Optional<User> findByIdWithRoles(@Param("id") Long id);
+
+    Optional<User> findByKeycloakId(String keycloakId);
+
+    boolean existsByKeycloakId(String keycloakId);
+
+    boolean existsByUsernameIgnoreCase(String username);
+
+    boolean existsByEmailIgnoreCase(String email);
 }

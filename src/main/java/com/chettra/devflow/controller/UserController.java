@@ -1,8 +1,10 @@
 package com.chettra.devflow.controller;
 
 import com.chettra.devflow.config.ApiConstrants;
+import com.chettra.devflow.dto.user.UserProvisionRequest;
 import com.chettra.devflow.dto.user.UserRequest;
 import com.chettra.devflow.dto.user.UserResponse;
+import com.chettra.devflow.service.UserProvisioningService;
 import com.chettra.devflow.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 	
 	private final UserService userService;
+	private final UserProvisioningService userProvisioningService;
 
 	@PostMapping
 	public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
@@ -85,5 +88,13 @@ public class UserController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void removeRole(@PathVariable Long userId, @PathVariable Long roleId) {
 		userService.removeRole(userId, roleId);
+	}
+
+	@PostMapping("/provision")
+	public ResponseEntity<UserResponse> provisionUser(
+			@Valid @RequestBody UserProvisionRequest request
+	) {
+		UserResponse response = userProvisioningService.provision(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 }

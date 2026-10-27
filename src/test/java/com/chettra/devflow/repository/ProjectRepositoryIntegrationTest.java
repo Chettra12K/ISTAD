@@ -71,7 +71,7 @@ class ProjectRepositoryIntegrationTest {
 				User.builder()
 						.username("integration-owner")
 						.email("integration-owner@devflow.test")
-						.password("test-password")
+
 						.active(true)
 						.build()
 		);

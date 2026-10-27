@@ -21,11 +21,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "keycloak_id", length = 36, unique = true)
+    private String keycloakId;
     @Column(nullable = false)
     private String username;
     @Column(nullable = false, unique = true)
     private String email;
-	private String password;
     private String firstname;
     private String lastname;
     private String profileImage;

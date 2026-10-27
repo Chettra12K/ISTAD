@@ -7,24 +7,24 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper( componentModel = "spring")
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
     UserResponse mapToResponse(User user);
+
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "keycloakId", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    
-    // Add this annotation to your existing mapToEntity method:
     @Mapping(target = "roles", ignore = true)
     User mapToEntity(UserRequest request);
+
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "keycloakId", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    
-    // Add this annotation to your existing updateEntity method:
     @Mapping(target = "roles", ignore = true)
     void updateEntity(UserRequest request, @MappingTarget User user);
 }

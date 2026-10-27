@@ -15,13 +15,18 @@ public class UserRequest {
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     private String username;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
+    @Size(max = 254, message = "Email must not exceed 254 characters")
     private String email;
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
-    private String password;
+
+    @Size(max = 100, message = "First name must not exceed 100 characters")
     private String firstname;
+
+    @Size(max = 100, message = "Last name must not exceed 100 characters")
     private String lastname;
+
+    @Size(max = 500, message = "Profile image URL must not exceed 500 characters")
     private String profileImage;
 }

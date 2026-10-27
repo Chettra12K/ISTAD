@@ -15,6 +15,7 @@
   "accessTokenLifespanForImplicitFlow": 900,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,
+
   "roles": {
     "realm": [
       {
@@ -31,6 +32,7 @@
       }
     ]
   },
+
   "clients": [
     {
       "clientId": "devflow-api",
@@ -45,6 +47,27 @@
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": true,
       "frontchannelLogout": true
+    }
+  ],
+
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@devflow.local",
+      "emailVerified": true,
+      "firstName": "DevFlow",
+      "lastName": "Administrator",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ]
     }
   ]
 }
