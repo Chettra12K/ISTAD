@@ -1,3 +1,4 @@
+
 package com.chettra.devflow.common.exception;
 
 import com.chettra.devflow.common.response.ErrorResponse;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -15,16 +17,24 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	
+
 	/**
 	 * Handles @Valid request body validation errors.
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletRequest request) {
-		
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+			MethodArgumentNotValidException exception,
+			HttpServletRequest request) {
+
 		Map<String, String> validationErrors = new LinkedHashMap<>();
-		exception.getBindingResult().getFieldErrors().forEach(error -> validationErrors.put(error.getField(), error.getDefaultMessage()));
-		
+
+		exception.getBindingResult().getFieldErrors().forEach(
+				error -> validationErrors.put(
+						error.getField(),
+						error.getDefaultMessage()
+				)
+		);
+
 		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.BAD_REQUEST.value())
@@ -34,31 +44,27 @@ public class GlobalExceptionHandler {
 				.timestamp(Instant.now())
 				.validationErrors(validationErrors)
 				.build();
-		
-		return ResponseEntity
-				.status(HttpStatus.BAD_REQUEST)
-				.body(response);
+
+		return ResponseEntity.badRequest().body(response);
 	}
-	
+
 	/**
-	 * Handles validation errors from method parameters,
-	 * for example @Min, @Max, @Positive, etc.
+	 * Handles validation errors from method parameters.
 	 */
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ErrorResponse> handleConstraintViolation(
 			ConstraintViolationException exception,
 			HttpServletRequest request) {
-		
+
 		Map<String, String> validationErrors = new LinkedHashMap<>();
-		
-		exception.getConstraintViolations()
-				.forEach(violation ->
-						validationErrors.put(
-								violation.getPropertyPath().toString(),
-								violation.getMessage()
-						)
-				);
-		
+
+		exception.getConstraintViolations().forEach(violation ->
+				validationErrors.put(
+						violation.getPropertyPath().toString(),
+						violation.getMessage()
+				)
+		);
+
 		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.BAD_REQUEST.value())
@@ -68,13 +74,15 @@ public class GlobalExceptionHandler {
 				.timestamp(Instant.now())
 				.validationErrors(validationErrors)
 				.build();
-		
-		return ResponseEntity
-				.status(HttpStatus.BAD_REQUEST)
-				.body(response);
+
+		return ResponseEntity.badRequest().body(response);
 	}
+
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+			ResourceNotFoundException exception,
+			HttpServletRequest request) {
+
 		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.NOT_FOUND.value())
@@ -83,43 +91,83 @@ public class GlobalExceptionHandler {
 				.path(request.getRequestURI())
 				.timestamp(Instant.now())
 				.build();
+
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	}
+
 	@ExceptionHandler(BadRequestException.class)
-	public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException exception, HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleBadRequest(
+			BadRequestException exception,
+			HttpServletRequest request) {
+
 		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.BAD_REQUEST.value())
+				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
 				.message(exception.getMessage())
 				.path(request.getRequestURI())
 				.timestamp(Instant.now())
-				.error(HttpStatus.BAD_REQUEST.getReasonPhrase())
 				.build();
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
+		return ResponseEntity.badRequest().body(response);
 	}
+
 	@ExceptionHandler(ConflictException.class)
 	public ResponseEntity<ErrorResponse> handleConflict(
-			ConflictException exception, HttpServletRequest request
-	) {
+			ConflictException exception,
+			HttpServletRequest request) {
+
 		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
-				.message(exception.getMessage())
 				.status(HttpStatus.CONFLICT.value())
-				.timestamp(Instant.now())
-				.path((request.getRequestURI()))
 				.error(HttpStatus.CONFLICT.getReasonPhrase())
+				.message(exception.getMessage())
+				.path(request.getRequestURI())
+				.timestamp(Instant.now())
 				.build();
+
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
-	
+
 	/**
-	 * Handles unexpected exceptions.
+	 * Preserves HTTP statuses raised through ResponseStatusException.
+	 * For example, duplicate users return 409 rather than 500.
+	 */
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<ErrorResponse> handleResponseStatusException(
+			ResponseStatusException exception,
+			HttpServletRequest request) {
+
+		HttpStatus status = HttpStatus.valueOf(
+				exception.getStatusCode().value()
+		);
+
+		String message = exception.getReason();
+
+		if (message == null || message.isBlank()) {
+			message = status.getReasonPhrase();
+		}
+
+		ErrorResponse response = ErrorResponse.builder()
+				.success(false)
+				.status(status.value())
+				.error(status.getReasonPhrase())
+				.message(message)
+				.path(request.getRequestURI())
+				.timestamp(Instant.now())
+				.build();
+
+		return ResponseEntity.status(status).body(response);
+	}
+
+	/**
+	 * Handles unexpected exceptions without exposing internal details.
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleException(
 			Exception exception,
 			HttpServletRequest request) {
-		
+
 		ErrorResponse response = ErrorResponse.builder()
 				.success(false)
 				.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -128,9 +176,7 @@ public class GlobalExceptionHandler {
 				.path(request.getRequestURI())
 				.timestamp(Instant.now())
 				.build();
-		
-		return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(response);
+
+		return ResponseEntity.internalServerError().body(response);
 	}
 }
