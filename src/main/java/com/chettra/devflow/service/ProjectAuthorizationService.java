@@ -86,4 +86,43 @@ public class ProjectAuthorizationService {
                 .filter(User::getActive)
                 .orElse(null);
     }
+
+    public boolean canCreateProjectForOwner(
+            Long ownerId,
+            Authentication authentication) {
+
+        if (hasRole(authentication, "ADMIN")) {
+            return true;
+        }
+
+        if (!hasRole(authentication, "PROJECT_MANAGER")) {
+            return false;
+        }
+
+        User authenticatedUser = findAuthenticatedUser(authentication);
+
+        return authenticatedUser != null
+                && authenticatedUser.getId().equals(ownerId);
+    }
+
+    public boolean canUpdateProjectOwner(
+            Long projectId,
+            Long requestedOwnerId,
+            Authentication authentication) {
+
+        if (hasRole(authentication, "ADMIN")) {
+            return true;
+        }
+
+        if (!canManageProject(projectId, authentication)) {
+            return false;
+        }
+
+        Project project = projectRepository.findByIdAndActiveTrue(projectId)
+                .orElse(null);
+
+        // Non-admins cannot transfer project ownership.
+        return project != null
+                && project.getOwner().getId().equals(requestedOwnerId);
+    }
 }

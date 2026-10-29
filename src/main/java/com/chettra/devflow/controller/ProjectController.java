@@ -27,12 +27,17 @@ import org.springframework.web.bind.annotation.*;
 public class ProjectController {
 	
 	private final ProjectService projectService;
-	
+
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
-	public ResponseEntity<ProjectResponse> create(@Valid @RequestBody ProjectRequest request) {
-		
-		return ResponseEntity.status(HttpStatus.CREATED).body(projectService.create(request));
+	@PreAuthorize(
+			"hasRole('ADMIN') or " +
+					"@projectAuthorizationService.canCreateProjectForOwner(#p0.ownerId, authentication)"
+	)
+	public ResponseEntity<ProjectResponse> create(
+			@Valid @RequestBody ProjectRequest request) {
+
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(projectService.create(request));
 	}
 	
 	@GetMapping("/{id}")
@@ -84,10 +89,12 @@ public class ProjectController {
 	@PutMapping("/{id}")
 	@PreAuthorize(
 			"hasRole('ADMIN') or " +
-					"@projectAuthorizationService.canManageProject(#id, authentication)"
+					"@projectAuthorizationService.canUpdateProjectOwner(#p0, #p1.ownerId, authentication)"
 	)
-	public ResponseEntity<ProjectResponse> update(@PathVariable Long id, @Valid @RequestBody ProjectRequest request) {
-		
+	public ResponseEntity<ProjectResponse> update(
+			@PathVariable Long id,
+			@Valid @RequestBody ProjectRequest request) {
+
 		return ResponseEntity.ok(projectService.update(id, request));
 	}
 
