@@ -1,3 +1,4 @@
+
 package com.chettra.devflow.service;
 
 import com.chettra.devflow.common.exception.BadRequestException;
@@ -50,8 +51,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		User owner = userRepository.findById(request.getOwnerId())
 				.orElseThrow(() -> new ResourceNotFoundException(
-						"Owner not found with id: "
-								+ request.getOwnerId()
+						"Owner not found with id: " + request.getOwnerId()
 				));
 
 		boolean duplicateExists =
@@ -63,8 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
 		if (duplicateExists) {
 			throw new ConflictException(
 					"An active project with this name already exists "
-							+ "for this owner: "
-							+ projectName
+							+ "for this owner: " + projectName
 			);
 		}
 
@@ -76,7 +75,8 @@ public class ProjectServiceImpl implements ProjectService {
 				.active(true)
 				.build();
 
-		Project savedProject = saveProjectOrThrowConflict(project, projectName);
+		Project savedProject =
+				saveProjectOrThrowConflict(project, projectName);
 
 		return projectMapper.toResponse(savedProject);
 	}
@@ -98,39 +98,51 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	// =========================================================
-	// GET ALL
+	// GET ALL VISIBLE PROJECTS
 	// =========================================================
 
 	@Override
-	public Page<ProjectResponse> getAll(Pageable pageable) {
+	public Page<ProjectResponse> getAll(
+			Pageable pageable,
+			Long currentUserId,
+			boolean administrator) {
 
-		return projectRepository
-				.findByActiveTrue(pageable)
-				.map(projectMapper::toResponse);
-	}
-
-	// =========================================================
-	// SEARCH
-	// =========================================================
-
-	@Override
-	public Page<ProjectResponse> search(ProjectPageRequest request) {
-
-		Page<Project> projects =
-				projectQueryService.search(request);
+		Page<Project> projects = projectQueryService.findVisible(
+				pageable,
+				currentUserId,
+				administrator
+		);
 
 		return projects.map(projectMapper::toResponse);
 	}
 
 	// =========================================================
-	// GET BY OWNER
+	// SEARCH VISIBLE PROJECTS
+	// =========================================================
+
+	@Override
+	public Page<ProjectResponse> search(
+			ProjectPageRequest request,
+			Long currentUserId,
+			boolean administrator) {
+
+		Page<Project> projects = projectQueryService.search(
+				request,
+				currentUserId,
+				administrator
+		);
+
+		return projects.map(projectMapper::toResponse);
+	}
+
+	// =========================================================
+	// GET PROJECTS BY OWNER
 	// =========================================================
 
 	@Override
 	public Page<ProjectResponse> getByOwner(
 			Long ownerId,
-			Pageable pageable
-	) {
+			Pageable pageable) {
 
 		if (!userRepository.existsById(ownerId)) {
 			throw new ResourceNotFoundException(
@@ -151,8 +163,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	public ProjectResponse update(
 			Long id,
-			ProjectRequest request
-	) {
+			ProjectRequest request) {
 
 		if (request.getStatus() == ProjectStatus.ARCHIVED) {
 			throw new BadRequestException(
@@ -170,8 +181,7 @@ public class ProjectServiceImpl implements ProjectService {
 		User owner = userRepository
 				.findById(request.getOwnerId())
 				.orElseThrow(() -> new ResourceNotFoundException(
-						"Owner not found with id: "
-								+ request.getOwnerId()
+						"Owner not found with id: " + request.getOwnerId()
 				));
 
 		String projectName =
@@ -184,11 +194,9 @@ public class ProjectServiceImpl implements ProjectService {
 				!project.getOwner().getId().equals(owner.getId());
 
 		/*
-		 * Check duplicate only when either the project name
-		 * or the owner has changed.
-		 *
-		 * This prevents the project from detecting itself
-		 * as a duplicate during a normal update.
+		 * Check for duplicates only when the name or owner changes.
+		 * This prevents an update from detecting the same project
+		 * as a duplicate of itself.
 		 */
 		if ((nameChanged || ownerChanged)
 				&& projectRepository
@@ -199,8 +207,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 			throw new ConflictException(
 					"An active project with this name already exists "
-							+ "for this owner: "
-							+ projectName
+							+ "for this owner: " + projectName
 			);
 		}
 
@@ -234,12 +241,16 @@ public class ProjectServiceImpl implements ProjectService {
 		projectRepository.save(project);
 	}
 
+	// =========================================================
+	// DATABASE CONSTRAINT HANDLING
+	// =========================================================
+
 	private Project saveProjectOrThrowConflict(
 			Project project,
-			String projectName
-	) {
+			String projectName) {
+
 		try {
-			// Flush immediately so the database uniqueness check happens here.
+			// Flush now so database constraint violations occur here.
 			return projectRepository.saveAndFlush(project);
 
 		} catch (DataIntegrityViolationException exception) {
@@ -247,19 +258,18 @@ public class ProjectServiceImpl implements ProjectService {
 			if (isProjectNameUniqueViolation(exception)) {
 				throw new ConflictException(
 						"An active project with this name already exists "
-								+ "for this owner: "
-								+ projectName
+								+ "for this owner: " + projectName
 				);
 			}
 
-			// Do not hide unrelated database integrity errors.
+			// Preserve unrelated database integrity errors.
 			throw exception;
 		}
 	}
 
 	private boolean isProjectNameUniqueViolation(
-			DataIntegrityViolationException exception
-	) {
+			DataIntegrityViolationException exception) {
+
 		Throwable cause = exception;
 
 		while (cause != null) {

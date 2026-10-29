@@ -1,3 +1,4 @@
+
 package com.chettra.devflow.controller;
 
 import com.chettra.devflow.common.exception.BadRequestException;
@@ -6,6 +7,7 @@ import com.chettra.devflow.config.ApiConstrants;
 import com.chettra.devflow.dto.project.ProjectRequest;
 import com.chettra.devflow.dto.project.ProjectResponse;
 import com.chettra.devflow.dto.request.ProjectPageRequest;
+import com.chettra.devflow.service.ProjectAuthorizationService;
 import com.chettra.devflow.service.ProjectService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -17,16 +19,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(ApiConstrants.API_V1+"/projects")
+@RequestMapping(ApiConstrants.API_V1 + "/projects")
 @RequiredArgsConstructor
 @Validated
 public class ProjectController {
-	
+
 	private final ProjectService projectService;
+	private final ProjectAuthorizationService projectAuthorizationService;
+
+	// =========================================================
+	// CREATE PROJECT
+	// =========================================================
 
 	@PostMapping
 	@PreAuthorize(
@@ -36,9 +44,14 @@ public class ProjectController {
 	public ResponseEntity<ProjectResponse> create(
 			@Valid @RequestBody ProjectRequest request) {
 
-		return ResponseEntity.status(HttpStatus.CREATED)
+		return ResponseEntity
+				.status(HttpStatus.CREATED)
 				.body(projectService.create(request));
 	}
+
+	// =========================================================
+	// GET PROJECT BY ID
+	// =========================================================
 
 	@GetMapping("/{id}")
 	@PreAuthorize(
@@ -49,16 +62,35 @@ public class ProjectController {
 
 		return ResponseEntity.ok(projectService.getById(id));
 	}
-	
+
+	// =========================================================
+	// GET ALL VISIBLE PROJECTS
+	// =========================================================
+
 	@GetMapping
-	public ResponseEntity<Page<ProjectResponse>> getAll(@RequestParam(defaultValue = "0") @Min(value = 0, message = "Page must be >= 0") int page,
-														@RequestParam(defaultValue = "10") @Min(value = 1, message = "Size must be >= 1") int size,
-														@RequestParam(defaultValue = "createdAt") String sortBy,
-														@RequestParam(defaultValue = "desc") String direction) {
+	public ResponseEntity<Page<ProjectResponse>> getAll(
+			@RequestParam(defaultValue = "0")
+			@Min(value = 0, message = "Page must be >= 0")
+			int page,
+
+			@RequestParam(defaultValue = "10")
+			@Min(value = 1, message = "Size must be >= 1")
+			int size,
+
+			@RequestParam(defaultValue = "createdAt")
+			String sortBy,
+
+			@RequestParam(defaultValue = "desc")
+			String direction,
+
+			Authentication authentication) {
 
 		if (!ProjectSortField.isAllowed(sortBy)) {
-			throw new BadRequestException("Invalid sort field: " + sortBy);
+			throw new BadRequestException(
+					"Invalid sort field: " + sortBy
+			);
 		}
+
 		final Sort.Direction sortDirection;
 
 		try {
@@ -69,30 +101,86 @@ public class ProjectController {
 							+ ". Allowed values: asc, desc"
 			);
 		}
-		Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-		
-		return ResponseEntity.ok(projectService.getAll(pageable));
-	}
-	
-	@GetMapping("/search")
-	public ResponseEntity<Page<ProjectResponse>> search(@Valid @ModelAttribute ProjectPageRequest request) {
 
-		return ResponseEntity.ok(projectService.search(request));
+		Pageable pageable = PageRequest.of(
+				page,
+				size,
+				Sort.by(sortDirection, sortBy)
+		);
+
+		Long currentUserId =
+				projectAuthorizationService.getCurrentUserId(authentication);
+
+		boolean administrator =
+				projectAuthorizationService.isAdministrator(authentication);
+
+		return ResponseEntity.ok(
+				projectService.getAll(
+						pageable,
+						currentUserId,
+						administrator
+				)
+		);
 	}
+
+	// =========================================================
+	// SEARCH VISIBLE PROJECTS
+	// =========================================================
+
+	@GetMapping("/search")
+	public ResponseEntity<Page<ProjectResponse>> search(
+			@Valid @ModelAttribute ProjectPageRequest request,
+			Authentication authentication) {
+
+		Long currentUserId =
+				projectAuthorizationService.getCurrentUserId(authentication);
+
+		boolean administrator =
+				projectAuthorizationService.isAdministrator(authentication);
+
+		return ResponseEntity.ok(
+				projectService.search(
+						request,
+						currentUserId,
+						administrator
+				)
+		);
+	}
+
+	// =========================================================
+	// GET PROJECTS BY OWNER
+	// =========================================================
 
 	@GetMapping("/owner/{ownerId}")
 	@PreAuthorize(
 			"hasRole('ADMIN') or " +
 					"@projectAuthorizationService.isCurrentUser(#ownerId, authentication)"
 	)
-	public ResponseEntity<Page<ProjectResponse>> getByOwner(@PathVariable Long ownerId,
-															@RequestParam(defaultValue = "0") @Min(0) int page,
-															@RequestParam(defaultValue = "10") @Min(1) int size) {
+	public ResponseEntity<Page<ProjectResponse>> getByOwner(
+			@PathVariable Long ownerId,
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-		
-		return ResponseEntity.ok(projectService.getByOwner(ownerId, pageable));
+			@RequestParam(defaultValue = "0")
+			@Min(value = 0, message = "Page must be >= 0")
+			int page,
+
+			@RequestParam(defaultValue = "10")
+			@Min(value = 1, message = "Size must be >= 1")
+			int size) {
+
+		Pageable pageable = PageRequest.of(
+				page,
+				size,
+				Sort.by(Sort.Direction.DESC, "createdAt")
+		);
+
+		return ResponseEntity.ok(
+				projectService.getByOwner(ownerId, pageable)
+		);
 	}
+
+	// =========================================================
+	// UPDATE PROJECT
+	// =========================================================
 
 	@PutMapping("/{id}")
 	@PreAuthorize(
@@ -103,8 +191,14 @@ public class ProjectController {
 			@PathVariable Long id,
 			@Valid @RequestBody ProjectRequest request) {
 
-		return ResponseEntity.ok(projectService.update(id, request));
+		return ResponseEntity.ok(
+				projectService.update(id, request)
+		);
 	}
+
+	// =========================================================
+	// ARCHIVE PROJECT
+	// =========================================================
 
 	@DeleteMapping("/{id}")
 	@PreAuthorize(
@@ -113,7 +207,6 @@ public class ProjectController {
 	)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void archive(@PathVariable Long id) {
-		
 		projectService.archive(id);
 	}
 }

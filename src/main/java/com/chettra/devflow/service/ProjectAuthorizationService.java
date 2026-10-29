@@ -174,4 +174,12 @@ public class ProjectAuthorizationService {
         return user != null
                 && user.getId().equals(userId);
     }
+    public Long getCurrentUserId(Authentication authentication) {
+        User user = findAuthenticatedUser(authentication);
+        return user != null ? user.getId() : null;
+    }
+
+    public boolean isAdministrator(Authentication authentication) {
+        return hasRole(authentication, "ADMIN");
+    }
 }

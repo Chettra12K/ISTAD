@@ -11,8 +11,8 @@ public interface ProjectService {
 	ProjectResponse create(ProjectRequest request);
 	ProjectResponse getById(Long id);
 	ProjectResponse update(Long id, ProjectRequest request);
-	Page<ProjectResponse> getAll(Pageable pageable);
-	Page<ProjectResponse> search(ProjectPageRequest request);
+	Page<ProjectResponse> getAll(Pageable pageable, Long currentUserId, boolean administrator);
+	Page<ProjectResponse> search(ProjectPageRequest request, Long currentUserId, boolean administrator);
 	Page<ProjectResponse> getByOwner(Long ownerId, Pageable pageable);
 	void archive(Long id);
 	
