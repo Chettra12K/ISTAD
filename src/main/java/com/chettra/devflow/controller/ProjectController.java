@@ -80,17 +80,23 @@ public class ProjectController {
 		
 		return ResponseEntity.ok(projectService.getByOwner(ownerId, pageable));
 	}
-	
+
 	@PutMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+	@PreAuthorize(
+			"hasRole('ADMIN') or " +
+					"@projectAuthorizationService.canManageProject(#id, authentication)"
+	)
 	public ResponseEntity<ProjectResponse> update(@PathVariable Long id, @Valid @RequestBody ProjectRequest request) {
 		
 		return ResponseEntity.ok(projectService.update(id, request));
 	}
-	
+
 	@DeleteMapping("/{id}")
+	@PreAuthorize(
+			"hasRole('ADMIN') or " +
+					"@projectAuthorizationService.canManageProject(#id, authentication)"
+	)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
 	public void archive(@PathVariable Long id) {
 		
 		projectService.archive(id);
