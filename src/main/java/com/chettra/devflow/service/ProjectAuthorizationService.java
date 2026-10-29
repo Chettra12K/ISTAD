@@ -87,6 +87,41 @@ public class ProjectAuthorizationService {
                 .orElse(null);
     }
 
+    public boolean canViewProject(
+            Long projectId,
+            Authentication authentication) {
+
+        if (hasRole(authentication, "ADMIN")) {
+            return true;
+        }
+
+        User user = findAuthenticatedUser(authentication);
+
+        if (user == null) {
+            return false;
+        }
+
+        Project project = projectRepository
+                .findByIdAndActiveTrue(projectId)
+                .orElse(null);
+
+        if (project == null) {
+            return false;
+        }
+
+        // Project owners can view their own projects.
+        if (project.getOwner() != null
+                && project.getOwner().getId().equals(user.getId())) {
+            return true;
+        }
+
+        // Other users must have an active membership.
+        return projectMemberRepository
+                .findByProjectIdAndUserId(projectId, user.getId())
+                .filter(member -> Boolean.TRUE.equals(member.getActive()))
+                .isPresent();
+    }
+
     public boolean canCreateProjectForOwner(
             Long ownerId,
             Authentication authentication) {
@@ -124,5 +159,19 @@ public class ProjectAuthorizationService {
         // Non-admins cannot transfer project ownership.
         return project != null
                 && project.getOwner().getId().equals(requestedOwnerId);
+    }
+
+    public boolean isCurrentUser(
+            Long userId,
+            Authentication authentication) {
+
+        if (hasRole(authentication, "ADMIN")) {
+            return true;
+        }
+
+        User user = findAuthenticatedUser(authentication);
+
+        return user != null
+                && user.getId().equals(userId);
     }
 }

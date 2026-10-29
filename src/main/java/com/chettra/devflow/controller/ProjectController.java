@@ -39,10 +39,14 @@ public class ProjectController {
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(projectService.create(request));
 	}
-	
+
 	@GetMapping("/{id}")
-	public ResponseEntity<ProjectResponse> getById(@PathVariable Long id) {
-		
+	@PreAuthorize(
+			"@projectAuthorizationService.canViewProject(#id, authentication)"
+	)
+	public ResponseEntity<ProjectResponse> getById(
+			@PathVariable Long id) {
+
 		return ResponseEntity.ok(projectService.getById(id));
 	}
 	
@@ -75,8 +79,12 @@ public class ProjectController {
 
 		return ResponseEntity.ok(projectService.search(request));
 	}
-	
+
 	@GetMapping("/owner/{ownerId}")
+	@PreAuthorize(
+			"hasRole('ADMIN') or " +
+					"@projectAuthorizationService.isCurrentUser(#ownerId, authentication)"
+	)
 	public ResponseEntity<Page<ProjectResponse>> getByOwner(@PathVariable Long ownerId,
 															@RequestParam(defaultValue = "0") @Min(0) int page,
 															@RequestParam(defaultValue = "10") @Min(1) int size) {
