@@ -16,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +29,7 @@ public class ProjectController {
 	private final ProjectService projectService;
 	
 	@PostMapping
+	@PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
 	public ResponseEntity<ProjectResponse> create(@Valid @RequestBody ProjectRequest request) {
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(projectService.create(request));
@@ -81,6 +82,7 @@ public class ProjectController {
 	}
 	
 	@PutMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
 	public ResponseEntity<ProjectResponse> update(@PathVariable Long id, @Valid @RequestBody ProjectRequest request) {
 		
 		return ResponseEntity.ok(projectService.update(id, request));
@@ -88,6 +90,7 @@ public class ProjectController {
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
 	public void archive(@PathVariable Long id) {
 		
 		projectService.archive(id);

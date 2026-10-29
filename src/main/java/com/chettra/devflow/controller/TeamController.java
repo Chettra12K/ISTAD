@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/teams")
@@ -20,6 +21,7 @@ public class TeamController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public TeamResponse create(@PathVariable Long projectId, @Valid @RequestBody TeamRequest request) {
         return teamService.create(projectId, request);
     }
@@ -37,6 +39,7 @@ public class TeamController {
     }
 
     @PutMapping("/{teamId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public TeamResponse update(
             @PathVariable Long projectId,
             @PathVariable Long teamId,
@@ -46,6 +49,7 @@ public class TeamController {
 
     @DeleteMapping("/{teamId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public void delete(@PathVariable Long projectId, @PathVariable Long teamId) {
         teamService.delete(projectId, teamId);
     }
