@@ -30,10 +30,17 @@ public class UserServiceImpl implements UserService {
 
 
 	@Override
-	public UserResponse create (UserRequest request) {
+	@Transactional
+	public UserResponse create(UserRequest request) {
+		validateUniqueIdentity(
+				request.getUsername(),
+				request.getEmail(),
+				null
+		);
 
 		User user = userMapper.mapToEntity(request);
 		User savedUser = userRepository.save(user);
+
 		return userMapper.mapToResponse(savedUser);
 	}
 
@@ -50,11 +57,23 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public UserResponse Update(Long id, UserRequest request) {
 		User user = userRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("User not found with id:" + id));
+				.orElseThrow(() -> new ResourceNotFoundException(
+						"User not found with id: " + id
+				));
+
+		validateUniqueIdentity(
+				request.getUsername(),
+				request.getEmail(),
+				id
+		);
+
 		userMapper.updateEntity(request, user);
+
 		User updatedUser = userRepository.save(user);
+
 		return userMapper.mapToResponse(updatedUser);
 	}
 	
@@ -114,6 +133,29 @@ public class UserServiceImpl implements UserService {
 					"User does not have role: " + role.getName()
 			);
 		}
+	}
+	private void validateUniqueIdentity(
+			String username,
+			String email,
+			Long excludedUserId
+	) {
+		userRepository.findByUsernameIgnoreCase(username)
+				.filter(user -> !user.getId().equals(excludedUserId))
+				.ifPresent(user -> {
+					throw new ResponseStatusException(
+							HttpStatus.CONFLICT,
+							"Username is already registered"
+					);
+				});
+
+		userRepository.findByEmailIgnoreCase(email)
+				.filter(user -> !user.getId().equals(excludedUserId))
+				.ifPresent(user -> {
+					throw new ResponseStatusException(
+							HttpStatus.CONFLICT,
+							"Email is already registered"
+					);
+				});
 	}
 
 }
