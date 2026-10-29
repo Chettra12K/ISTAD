@@ -24,7 +24,9 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<CommentResponse> create(
             @PathVariable Long projectId,
             @PathVariable Long taskId,
@@ -36,7 +38,9 @@ public class CommentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<Page<CommentResponse>> getAll(
             @PathVariable Long projectId,
             @PathVariable Long taskId,
@@ -51,7 +55,9 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<CommentResponse> update(
             @PathVariable Long projectId,
             @PathVariable Long taskId,
@@ -61,7 +67,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<Void> delete(
             @PathVariable Long projectId,
             @PathVariable Long taskId,

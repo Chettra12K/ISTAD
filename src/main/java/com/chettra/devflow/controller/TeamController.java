@@ -21,12 +21,17 @@ public class TeamController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public TeamResponse create(@PathVariable Long projectId, @Valid @RequestBody TeamRequest request) {
         return teamService.create(projectId, request);
     }
 
     @GetMapping
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public Page<TeamResponse> getAll(
             @PathVariable Long projectId,
             @PageableDefault(size = 10, sort = "name") Pageable pageable) {
@@ -34,12 +39,17 @@ public class TeamController {
     }
 
     @GetMapping("/{teamId}")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public TeamResponse getById(@PathVariable Long projectId, @PathVariable Long teamId) {
         return teamService.getById(projectId, teamId);
     }
 
     @PutMapping("/{teamId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public TeamResponse update(
             @PathVariable Long projectId,
             @PathVariable Long teamId,
@@ -49,7 +59,9 @@ public class TeamController {
 
     @DeleteMapping("/{teamId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public void delete(@PathVariable Long projectId, @PathVariable Long teamId) {
         teamService.delete(projectId, teamId);
     }

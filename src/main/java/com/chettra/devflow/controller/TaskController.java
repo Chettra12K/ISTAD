@@ -24,7 +24,9 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<TaskResponse> create(
             @PathVariable Long projectId,
             @Valid @RequestBody TaskRequest request) {
@@ -33,7 +35,9 @@ public class TaskController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<Page<TaskResponse>> getAll(
             @PathVariable Long projectId,
             @RequestParam(required = false) TaskStatus status,
@@ -50,7 +54,9 @@ public class TaskController {
     }
 
     @GetMapping("/{taskId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<TaskResponse> getById(
             @PathVariable Long projectId,
             @PathVariable Long taskId) {
@@ -58,7 +64,9 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<TaskResponse> update(
             @PathVariable Long projectId,
             @PathVariable Long taskId,

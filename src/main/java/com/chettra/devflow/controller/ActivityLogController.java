@@ -19,7 +19,9 @@ public class ActivityLogController {
     private final ActivityLogService activityLogService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<Page<ActivityLogResponse>> getProjectLogs(
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "0") int page,

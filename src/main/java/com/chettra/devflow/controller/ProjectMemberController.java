@@ -23,7 +23,9 @@ public class ProjectMemberController {
     private final ProjectMemberService projectMemberService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<ProjectMemberResponse> add(
             @PathVariable Long projectId,
             @Valid @RequestBody ProjectMemberRequest request) {
@@ -32,7 +34,9 @@ public class ProjectMemberController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<Page<ProjectMemberResponse>> getAll(
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "0") int page,
@@ -46,7 +50,9 @@ public class ProjectMemberController {
     }
 
     @GetMapping("/{memberId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<ProjectMemberResponse> getById(
             @PathVariable Long projectId,
             @PathVariable Long memberId) {
@@ -54,7 +60,9 @@ public class ProjectMemberController {
     }
 
     @PatchMapping("/{memberId}/role")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<ProjectMemberResponse> updateRole(
             @PathVariable Long projectId,
             @PathVariable Long memberId,
@@ -63,7 +71,9 @@ public class ProjectMemberController {
     }
 
     @DeleteMapping("/{memberId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<Void> remove(
             @PathVariable Long projectId,
             @PathVariable Long memberId) {
@@ -72,7 +82,9 @@ public class ProjectMemberController {
     }
 
     @PutMapping("/{memberId}/teams/{teamId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<ProjectMemberResponse> addToTeam(
             @PathVariable Long projectId,
             @PathVariable Long memberId,
@@ -81,7 +93,9 @@ public class ProjectMemberController {
     }
 
     @DeleteMapping("/{memberId}/teams/{teamId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<ProjectMemberResponse> removeFromTeam(
             @PathVariable Long projectId,
             @PathVariable Long memberId,

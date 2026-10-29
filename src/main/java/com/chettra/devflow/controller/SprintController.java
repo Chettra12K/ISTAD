@@ -23,7 +23,9 @@ public class SprintController {
     private final SprintService sprintService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<SprintResponse> create(
             @PathVariable Long projectId,
             @Valid @RequestBody SprintRequest request) {
@@ -32,7 +34,9 @@ public class SprintController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<Page<SprintResponse>> getAll(
             @PathVariable Long projectId,
             @RequestParam(required = false) SprintStatus status,
@@ -47,7 +51,9 @@ public class SprintController {
     }
 
     @GetMapping("/{sprintId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'USER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canViewProject(#projectId, authentication)"
+    )
     public ResponseEntity<SprintResponse> getById(
             @PathVariable Long projectId,
             @PathVariable Long sprintId) {
@@ -55,7 +61,9 @@ public class SprintController {
     }
 
     @PutMapping("/{sprintId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
+    @PreAuthorize(
+            "@projectAuthorizationService.canManageProject(#projectId, authentication)"
+    )
     public ResponseEntity<SprintResponse> update(
             @PathVariable Long projectId,
             @PathVariable Long sprintId,
