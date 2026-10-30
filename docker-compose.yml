@@ -6,37 +6,58 @@ services:
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: devflow
-      POSTGRES_USER: devflow
-      POSTGRES_PASSWORD: devflow123
+      POSTGRES_DB: ${POSTGRES_DB:-devflow}
+      POSTGRES_USER: ${POSTGRES_USER:-devflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devflow123}
 
     ports:
-      - "1300:5432"
+      - "${POSTGRES_PORT:-1300}:5432"
 
     volumes:
       - devflow-postgres_data:/var/lib/postgresql/data
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-devflow} -d ${POSTGRES_DB:-devflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.8.1
     container_name: devflow-keycloak
     restart: unless-stopped
+
     command:
       - start-dev
       - --import-realm
+
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin123}
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: devflow
-      KC_DB_PASSWORD: devflow123
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-devflow}
+      KC_DB_SCHEMA: ${KEYCLOAK_DB_SCHEMA:-keycloak}
+      KC_DB_USERNAME: ${POSTGRES_USER:-devflow}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-devflow123}
+
     ports:
-      - "8081:8080"
+      - "${KEYCLOAK_PORT:-8081}:8080"
+
     volumes:
       - ./docker/keycloak:/opt/keycloak/data/import:ro
+
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
-    devflow-postgres_data:
+  devflow-postgres_data:
