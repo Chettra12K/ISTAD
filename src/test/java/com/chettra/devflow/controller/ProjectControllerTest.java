@@ -6,8 +6,10 @@ import com.chettra.devflow.dto.project.ProjectRequest;
 import com.chettra.devflow.dto.project.ProjectResponse;
 import com.chettra.devflow.dto.request.ProjectPageRequest;
 import com.chettra.devflow.entity.ProjectStatus;
+import com.chettra.devflow.service.ProjectAuthorizationService;
 import com.chettra.devflow.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -16,6 +18,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,6 +51,18 @@ class ProjectControllerTest {
 
 	@MockitoBean
 	private ProjectService projectService;
+	@MockitoBean
+	private ProjectAuthorizationService projectAuthorizationService;
+
+
+	@BeforeEach
+	void setUp() {
+		when(projectAuthorizationService.getCurrentUserId(any()))
+				.thenReturn(1L);
+
+		when(projectAuthorizationService.isAdministrator(any()))
+				.thenReturn(false);
+	}
 
 	@Test
 	void create_shouldReturn201() throws Exception {
@@ -167,8 +182,11 @@ class ProjectControllerTest {
 						1
 				);
 
-		when(projectService.getAll(any()))
-				.thenReturn(page);
+		when(projectService.getAll(
+				any(Pageable.class),
+				anyLong(),
+				anyBoolean()
+		)).thenReturn(page);
 
 		mockMvc.perform(
 						get("/api/v1/projects")
@@ -181,8 +199,11 @@ class ProjectControllerTest {
 				.andExpect(jsonPath("$.content[0].name")
 						.value("DevFlow API"));
 
-		verify(projectService)
-				.getAll(any());
+		verify(projectService).getAll(
+				any(Pageable.class),
+				anyLong(),
+				anyBoolean()
+		);
 	}
 
 	@Test
@@ -405,9 +426,14 @@ class ProjectControllerTest {
 						1
 				);
 
-		when(projectService.search(any(ProjectPageRequest.class)))
-				.thenReturn(page);
+		// Arrange: define the expected service response
+		when(projectService.search(
+				any(ProjectPageRequest.class),
+				anyLong(),
+				anyBoolean()
+		)).thenReturn(page);
 
+		// Act: perform the HTTP request
 		mockMvc.perform(
 						get("/api/v1/projects/search")
 								.param("page", "0")
@@ -417,13 +443,16 @@ class ProjectControllerTest {
 								.param("status", "PLANNING")
 				)
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.content[0].id")
-						.value(1))
+				.andExpect(jsonPath("$.content[0].id").value(1))
 				.andExpect(jsonPath("$.content[0].name")
 						.value("DevFlow API"));
 
-		verify(projectService)
-				.search(any(ProjectPageRequest.class));
+		// Assert: verify the service was called
+		verify(projectService).search(
+				any(ProjectPageRequest.class),
+				anyLong(),
+				anyBoolean()
+		);
 	}
 
 	@Test
@@ -441,9 +470,14 @@ class ProjectControllerTest {
 						1
 				);
 
-		when(projectService.search(any(ProjectPageRequest.class)))
-				.thenReturn(page);
+		// Arrange: define the expected service response
+		when(projectService.search(
+				any(ProjectPageRequest.class),
+				anyLong(),
+				anyBoolean()
+		)).thenReturn(page);
 
+		// Act: perform the HTTP request
 		mockMvc.perform(
 						get("/api/v1/projects/search")
 								.param("page", "0")
@@ -451,13 +485,16 @@ class ProjectControllerTest {
 								.param("ownerId", "1")
 				)
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.content[0].id")
-						.value(1))
+				.andExpect(jsonPath("$.content[0].id").value(1))
 				.andExpect(jsonPath("$.content[0].name")
 						.value("DevFlow API"));
 
-		verify(projectService)
-				.search(any(ProjectPageRequest.class));
+		// Assert: verify the service was called
+		verify(projectService).search(
+				any(ProjectPageRequest.class),
+				anyLong(),
+				anyBoolean()
+		);
 	}
 
 	@Test

@@ -83,6 +83,39 @@ public class KeycloakAdminClient {
         return userId;
     }
 
+    public void assignRealmRole(String keycloakUserId, String roleName) {
+
+        Map<?, ?> role = client.get()
+                .uri("/admin/realms/{realm}/roles/{roleName}", realm, roleName)
+                .header(HttpHeaders.AUTHORIZATION, bearerToken())
+                .retrieve()
+                .body(Map.class);
+
+        if (role == null
+                || !(role.get("id") instanceof String roleId)
+                || !(role.get("name") instanceof String)) {
+            throw new IllegalStateException(
+                    "Keycloak realm role could not be found: " + roleName
+            );
+        }
+
+        Map<String, String> roleRepresentation = Map.of(
+                "id", roleId,
+                "name", roleName
+        );
+
+        client.post()
+                .uri(
+                        "/admin/realms/{realm}/users/{userId}/role-mappings/realm",
+                        realm,
+                        keycloakUserId
+                )
+                .header(HttpHeaders.AUTHORIZATION, bearerToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(List.of(roleRepresentation))
+                .retrieve()
+                .toBodilessEntity();
+    }
     public void deleteUser(String keycloakId) {
         client.delete()
                 .uri("/admin/realms/{realm}/users/{id}", realm, keycloakId)

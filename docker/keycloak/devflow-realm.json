@@ -47,6 +47,20 @@
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": true,
       "frontchannelLogout": true
+    },
+    {
+      "clientId": "devflow-provisioner",
+      "name": "DevFlow Keycloak Provisioner",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": false
     }
   ],
 
