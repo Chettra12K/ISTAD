@@ -1,0 +1,14 @@
+.git
+.github
+.gradle
+build
+out
+.idea
+.vscode
+*.iml
+*.log
+.env
+.env.*
+!.env.example
+docker-compose*.yml
+devflow-before-recovery.dump
